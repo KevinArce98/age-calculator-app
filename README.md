@@ -36,8 +36,8 @@ Users should be able to:
 
 ### Links
 
-- Solution URL: [Add solution URL here](https://your-solution-url.com)
-- Live Site URL: [Add live site URL here](https://your-live-site-url.com)
+- Solution URL: [Solution URL](https://www.frontendmentor.io/solutions/age-calculator-app-solution-yoNNp-pjJ2)
+- Live Site URL: [Demo URL](https://age-calculator-app-ochre-six.vercel.app/)
 
 ## My process
 
