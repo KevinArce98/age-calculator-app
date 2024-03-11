@@ -1,0 +1,190 @@
+---
+import TextField from './Textfield.astro';
+import ArrowIcon from './ArrowIcon.astro';
+---
+
+<form id="form">
+	<div class="flex gap-4">
+		<TextField id="day" label="Day" name="day" placeholder="DD" />
+		<TextField id="month" label="Month" name="month" placeholder="MM" />
+		<TextField id="year" label="Year" name="year" placeholder="YYYY" />
+	</div>
+	<div class="flex items-center relative">
+		<hr class="border-light-grey w-full md:m-0 my-16" />
+		<button
+			type="submit"
+			class="bg-purple hover:bg-off-black text-white p-5 rounded-full md:ml-1 transition duration-200 ease-linear md:relative absolute mx-auto left-0 right-0 w-fit"
+		>
+			<ArrowIcon class:list="md:w-14 md:h-14 w-8 h-8" />
+		</button>
+	</div>
+</form>
+
+<script>
+	import {
+		VALID_MONTH_ERROR,
+		FIELD_REQUIRED_ERROR,
+		VALID_DAY_ERROR,
+		VALID_YEAR_ERROR,
+	} from '@/utils/constants';
+
+	const getElement = (id: string) => document.getElementById(id);
+
+	const dayTxt = getElement('day') as HTMLInputElement;
+	const monthTxt = getElement('month') as HTMLInputElement;
+	const yearTxt = getElement('year') as HTMLInputElement;
+
+	const form = document.getElementById('form');
+
+	const validateDay = (day: string) => {
+		if (day.trim() === '') {
+			return FIELD_REQUIRED_ERROR;
+		}
+		const dayNum = parseInt(day);
+		if (!dayNum || dayNum < 1 || dayNum > 31) {
+			return VALID_DAY_ERROR;
+		}
+		return '';
+	};
+
+	const validateMonth = (month: string) => {
+		if (month.trim() === '') {
+			return FIELD_REQUIRED_ERROR;
+		}
+		const monthNum = parseInt(month);
+		if (!monthNum || monthNum < 1 || monthNum > 12) {
+			return VALID_MONTH_ERROR;
+		}
+		return '';
+	};
+
+	const validateYear = (year: string) => {
+		if (year.trim() === '') {
+			return FIELD_REQUIRED_ERROR;
+		}
+		const yearNum = parseInt(year);
+		if (!yearNum || yearNum < 1900 || yearNum > new Date().getFullYear()) {
+			return VALID_YEAR_ERROR;
+		}
+		return '';
+	};
+
+	const updateInputError = (id: string, isError: boolean, text: string) => {
+		const input = getElement(id);
+		const label = getElement(`${id}-label`);
+		const container = getElement(`${id}-container`);
+		const error = getElement(`${id}-error`);
+
+		if (input && label && container && error) {
+			if (isError) {
+				input.classList.add('border-red-600');
+				input.classList.remove('focus:border-purple', 'border-gray-300');
+				label.classList.add('text-red-600');
+				label.classList.remove('text-smokey-grey');
+				error.innerText = text;
+			} else {
+				input.classList.remove('border-red-600');
+				input.classList.add('focus:border-purple', 'border-gray-300');
+				label.classList.remove('text-red-600');
+				label.classList.add('text-smokey-grey');
+				error.innerText = '';
+			}
+		}
+	};
+
+	const validateAndHandleError = (
+		id: string,
+		value: string,
+		validator: (day: string) => string
+	) => {
+		const error = validator(value);
+		updateInputError(id, !!error, error);
+		return error;
+	};
+
+	const animate = (value: number, element: HTMLSpanElement) => {
+		const data = element.innerText === '--' ? 0 : parseInt(element.innerText);
+		const time = value / 200;
+		if (data < value) {
+			element.innerText = Math.ceil(data + time).toString();
+			setTimeout(() => animate(value, element), 1);
+		} else {
+			element.innerText = value.toString();
+		}
+	};
+
+	form?.addEventListener('submit', (e) => {
+		e.preventDefault();
+
+		const dayError = validateAndHandleError('day', dayTxt.value, validateDay);
+		const monthError = validateAndHandleError(
+			'month',
+			monthTxt.value,
+			validateMonth
+		);
+		const yearError = validateAndHandleError(
+			'year',
+			yearTxt.value,
+			validateYear
+		);
+
+		if (dayError || monthError || yearError) {
+			return;
+		}
+
+		const birthday = new Date(
+			parseInt(yearTxt.value),
+			parseInt(monthTxt.value) - 1,
+			parseInt(dayTxt.value)
+		);
+
+		const { days, months, years } = calculateAge(birthday);
+
+		const yearsSpan = document.querySelector(
+			'[data-at="years"]'
+		) as HTMLSpanElement;
+		const monthsSpan = document.querySelector(
+			'[data-at="months"]'
+		) as HTMLSpanElement;
+		const daysSpan = document.querySelector(
+			'[data-at="days"]'
+		) as HTMLSpanElement;
+
+		if (yearsSpan && monthsSpan && daysSpan) {
+			// yearsSpan.innerHTML = years.toString();
+			// monthsSpan.innerHTML = months.toString();
+			// daysSpan.innerHTML = days.toString();
+
+			animate(years, yearsSpan);
+			animate(months, monthsSpan);
+			animate(days, daysSpan);
+		}
+	});
+
+	const calculateAge = (
+		birthday: Date
+	): { years: number; months: number; days: number } => {
+		const today = new Date();
+		let years = today.getFullYear() - birthday.getFullYear();
+		let months = today.getMonth() - birthday.getMonth();
+		let days = today.getDate() - birthday.getDate();
+
+		// Check if the birthday hasn't occurred yet this year
+		if (months < 0 || (months === 0 && days < 0)) {
+			years--;
+			months += 12;
+		}
+
+		// Adjust months and days if they are negative
+		if (months < 0) {
+			months += 12;
+		}
+		if (days < 0) {
+			const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 0);
+			days += lastMonth.getDate();
+			months--;
+		}
+
+		return { years, months, days };
+	};
+</script>

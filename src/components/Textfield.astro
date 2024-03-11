@@ -1,0 +1,29 @@
+---
+interface Props {
+	label: string;
+	id: string;
+	name: string;
+	placeholder: string;
+}
+const { label, id, name, placeholder } = Astro.props;
+---
+
+<div class="flex flex-col md:w-44 w-24" id={`${id}-container`}>
+	<label
+		for={id}
+		id={`${id}-label`}
+		class="text-smokey-grey text-sm font-bold uppercase tracking-[0.13rem]"
+		>{label}</label
+	>
+	<input
+		type="text"
+		id={id}
+		name={name}
+		class="mt-1 px-3 py-3 border rounded-md shadow-sm focus:outline-none font-bold text-2xl"
+		placeholder={placeholder}
+		autocomplete="off"
+		aria-label={label}
+		aria-required="true"
+	/>
+	<span id={`${id}-error`} class="italic text-sm mt-1 text-red-600"></span>
+</div>
